@@ -87,4 +87,37 @@ public class TuyaEncoderTest {
         assertThat(result.length, is(expectedResult.length));
         assertThat(result, is(expectedResult));
     }
+
+    @Test
+    public void testEncoding35() throws Exception {
+        when(ctxMock.channel()).thenReturn(channelMock);
+
+        when(channelMock.hasAttr(DEVICE_ID_ATTR)).thenReturn(true);
+        when(channelMock.attr(DEVICE_ID_ATTR)).thenReturn(deviceIdAttrMock);
+        when(deviceIdAttrMock.get()).thenReturn("");
+
+        when(channelMock.hasAttr(PROTOCOL_ATTR)).thenReturn(true);
+        when(channelMock.attr(PROTOCOL_ATTR)).thenReturn(protocolAttrMock);
+        when(protocolAttrMock.get()).thenReturn(ProtocolVersion.V3_5); // Protokollversion 3.5
+
+        when(channelMock.hasAttr(SESSION_KEY_ATTR)).thenReturn(true);
+        when(channelMock.attr(SESSION_KEY_ATTR)).thenReturn(sessionKeyAttrMock);
+        when(sessionKeyAttrMock.get()).thenReturn("5c8c3ccc1f0fbdbb".getBytes(StandardCharsets.UTF_8));
+
+        byte[] payload = HexUtils.hexToBytes("47f877066f5983df0681e1f08be9f1a1");
+        byte[] expectedResult = HexUtils.hexToBytes(
+                "000055aa000000010000000300000044af06484eb01c2272666a10953aaa23e89328e42ea1f29fd0eca40999ab964927c99646647abb2ab242062a7e911953195ae99b2ee79fa00a95da8cc67e0b42e20000aa55");
+
+        MessageWrapper<?> msg = new MessageWrapper<>(CommandType.SESS_KEY_NEG_START, payload);
+
+        TuyaEncoder encoder = new TuyaEncoder(gson);
+        encoder.encode(ctxMock, msg, out);
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+
+        verify(out).writeBytes((byte[]) captor.capture());
+        byte[] result = (byte[]) captor.getValue();
+        assertThat(result.length, is(expectedResult.length));
+        assertThat(result, is(expectedResult));
+    }
 }

@@ -84,4 +84,35 @@ public class TuyaDecoderTest {
         MessageWrapper<?> result = (MessageWrapper<?>) out.get(0);
         assertThat(result.content, is(expectedResult));
     }
+
+    @Test
+    public void decode35Test() throws Exception {
+        when(ctxMock.channel()).thenReturn(channelMock);
+
+        when(channelMock.hasAttr(DEVICE_ID_ATTR)).thenReturn(true);
+        when(channelMock.attr(DEVICE_ID_ATTR)).thenReturn(deviceIdAttrMock);
+        when(deviceIdAttrMock.get()).thenReturn("");
+
+        when(channelMock.hasAttr(PROTOCOL_ATTR)).thenReturn(true);
+        when(channelMock.attr(PROTOCOL_ATTR)).thenReturn(protocolAttrMock);
+        when(protocolAttrMock.get()).thenReturn(ProtocolVersion.V3_5); // Protokollversion 3.5
+
+        when(channelMock.hasAttr(SESSION_KEY_ATTR)).thenReturn(true);
+        when(channelMock.attr(SESSION_KEY_ATTR)).thenReturn(sessionKeyAttrMock);
+        when(sessionKeyAttrMock.get()).thenReturn("5c8c3ccc1f0fbdbb".getBytes(StandardCharsets.UTF_8));
+
+        byte[] packet = HexUtils.hexToBytes(
+                "000055aa0000fc6c0000000400000068000000004b578f442ec0802f26ca6794389ce4ebf57f94561e9367569b0ff90afebe08765460b35678102c0a96b666a6f6a3aabf9328e42ea1f29fd0eca40999ab964927c340dba68f847cb840b473c19572f8de9e222de2d5b1793dc7d4888a8b4f11b00000aa55");
+        byte[] expectedResult = HexUtils.hexToBytes(
+                "3965333963353564643232333163336605ca4f27a567a763d0df1ed6c34fa5bb334a604d900cc86b8085eef6acd0193d");
+
+        List<Object> out = new ArrayList<>();
+
+        TuyaDecoder decoder = new TuyaDecoder(gson);
+        decoder.decode(ctxMock, Unpooled.copiedBuffer(packet), out);
+
+        assertThat(out, hasSize(1));
+        MessageWrapper<?> result = (MessageWrapper<?>) out.get(0);
+        assertThat(result.content, is(expectedResult));
+    }
 }

@@ -20,6 +20,7 @@ import static org.smarthomej.binding.tuya.internal.local.CommandType.SESS_KEY_NE
 import static org.smarthomej.binding.tuya.internal.local.CommandType.SESS_KEY_NEG_START;
 import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_3;
 import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_4;
+import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_5;
 import static org.smarthomej.binding.tuya.internal.local.TuyaDevice.*;
 import static org.smarthomej.binding.tuya.internal.local.TuyaDevice.SESSION_KEY_ATTR;
 
@@ -87,7 +88,7 @@ public class TuyaEncoder extends MessageToByteEncoder<MessageWrapper<?>> {
         if (msg.content == null || msg.content instanceof Map<?, ?>) {
             Map<String, Object> content = (Map<String, Object>) msg.content;
             Map<String, Object> payload = new HashMap<>();
-            if (protocol == V3_4) {
+            if (protocol == V3_4 || protocol == V3_5) {
                 payload.put("protocol", 5);
                 payload.put("t", System.currentTimeMillis() / 1000);
                 Map<String, Object> data = new HashMap<>();
@@ -125,7 +126,7 @@ public class TuyaEncoder extends MessageToByteEncoder<MessageWrapper<?>> {
             return;
         }
 
-        Optional<byte[]> bufferOptional = protocol == V3_4 ? encode34(msg.commandType, payloadBytes, sessionKey)
+        Optional<byte[]> bufferOptional = (protocol == V3_4 || protocol == V3_5) ? encode34(msg.commandType, payloadBytes, sessionKey)
                 : encodePre34(msg.commandType, payloadBytes, sessionKey, protocol);
 
         bufferOptional.ifPresentOrElse(buffer -> {

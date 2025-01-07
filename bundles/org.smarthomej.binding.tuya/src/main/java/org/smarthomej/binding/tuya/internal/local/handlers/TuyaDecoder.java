@@ -20,6 +20,7 @@ import static org.smarthomej.binding.tuya.internal.local.CommandType.UDP;
 import static org.smarthomej.binding.tuya.internal.local.CommandType.UDP_NEW;
 import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_3;
 import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_4;
+import static org.smarthomej.binding.tuya.internal.local.ProtocolVersion.V3_5;
 import static org.smarthomej.binding.tuya.internal.local.TuyaDevice.*;
 
 import java.nio.ByteBuffer;
@@ -116,14 +117,14 @@ public class TuyaDecoder extends ByteToMessageDecoder {
         if ((returnCode & 0xffffff00) != 0) {
             // rewind if no return code is present
             buffer.position(buffer.position() - 4);
-            payload = protocol == V3_4 ? new byte[payloadLength - 32] : new byte[payloadLength - 8];
+            payload = (protocol == V3_4 || protocol == V3_5) ? new byte[payloadLength - 32] : new byte[payloadLength - 8];
         } else {
-            payload = protocol == V3_4 ? new byte[payloadLength - 32 - 8] : new byte[payloadLength - 8 - 4];
+            payload = (protocol == V3_4 || protocol == V3_5) ? new byte[payloadLength - 32 - 8] : new byte[payloadLength - 8 - 4];
         }
 
         buffer.get(payload);
 
-        if (protocol == V3_4 && commandType != UDP && commandType != UDP_NEW) {
+        if ((protocol == V3_4 || protocol == V3_5) && commandType != UDP && commandType != UDP_NEW) {
             byte[] fullMessage = new byte[buffer.position()];
             buffer.position(0);
             buffer.get(fullMessage);
@@ -170,14 +171,14 @@ public class TuyaDecoder extends ByteToMessageDecoder {
             m = new MessageWrapper<>(commandType,
                     Objects.requireNonNull(gson.fromJson(new String(payload), DiscoveryMessage.class)));
         } else {
-            byte[] decodedMessage = protocol == V3_4 ? CryptoUtil.decryptAesEcb(payload, sessionKey, true)
+            byte[] decodedMessage = (protocol == V3_4 || protocol == V3_5) ? CryptoUtil.decryptAesEcb(payload, sessionKey, true)
                     : CryptoUtil.decryptAesEcb(payload, sessionKey, false);
             if (decodedMessage == null) {
                 return;
             }
 
             if (Arrays.equals(Arrays.copyOfRange(decodedMessage, 0, protocol.getBytes().length), protocol.getBytes())) {
-                if (protocol == V3_4) {
+                if (protocolVersion == V3_4 || protocolVersion == V3_5) {
                     // Remove 3.4 header
                     decodedMessage = Arrays.copyOfRange(decodedMessage, 15, decodedMessage.length);
                 }
