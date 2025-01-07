@@ -117,9 +117,13 @@ public class TuyaDecoder extends ByteToMessageDecoder {
         if ((returnCode & 0xffffff00) != 0) {
             // rewind if no return code is present
             buffer.position(buffer.position() - 4);
-            payload = (protocol == V3_4 || protocol == V3_5) ? new byte[payloadLength - 32] : new byte[payloadLength - 8];
+            payload = (protocol == V3_4 || protocol == V3_5)
+                    ? new byte[payloadLength - 32]
+                    : new byte[payloadLength - 8];
         } else {
-            payload = (protocol == V3_4 || protocol == V3_5) ? new byte[payloadLength - 32 - 8] : new byte[payloadLength - 8 - 4];
+            payload = (protocol == V3_4 || protocol == V3_5)
+                    ? new byte[payloadLength - 32 - 8]
+                    : new byte[payloadLength - 8 - 4];
         }
 
         buffer.get(payload);
@@ -171,7 +175,9 @@ public class TuyaDecoder extends ByteToMessageDecoder {
             m = new MessageWrapper<>(commandType,
                     Objects.requireNonNull(gson.fromJson(new String(payload), DiscoveryMessage.class)));
         } else {
-            byte[] decodedMessage = (protocol == V3_4 || protocol == V3_5) ? CryptoUtil.decryptAesEcb(payload, sessionKey, true) : CryptoUtil.decryptAesEcb(payload, sessionKey, false);
+            byte[] decodedMessage = (protocol == V3_4 || protocol == V3_5)
+                    ? CryptoUtil.decryptAesEcb(payload, sessionKey, true)
+                    : CryptoUtil.decryptAesEcb(payload, sessionKey, false);
 
             if (decodedMessage == null) {
                 return;
