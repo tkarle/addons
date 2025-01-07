@@ -182,7 +182,7 @@ public class TuyaDecoder extends ByteToMessageDecoder {
             }
 
             if (Arrays.equals(Arrays.copyOfRange(decodedMessage, 0, protocol.getBytes().length), protocol.getBytes())) {
-                if (protocolVersion == V3_4 || protocolVersion == V3_5) {
+                if (protocol == V3_4 || protocol == V3_5 ) {
                     // Remove 3.4 header
                     decodedMessage = Arrays.copyOfRange(decodedMessage, 15, decodedMessage.length);
                 }
