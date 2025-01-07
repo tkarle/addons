@@ -126,7 +126,8 @@ public class TuyaEncoder extends MessageToByteEncoder<MessageWrapper<?>> {
             return;
         }
 
-        Optional<byte[]> bufferOptional = (protocol == V3_4 || protocol == V3_5) ? encode34(msg.commandType, payloadBytes, sessionKey)
+        Optional<byte[]> bufferOptional = (protocol == V3_4 || protocol == V3_5)
+                ? encode34(msg.commandType, payloadBytes, sessionKey)
                 : encodePre34(msg.commandType, payloadBytes, sessionKey, protocol);
 
         bufferOptional.ifPresentOrElse(buffer -> {
